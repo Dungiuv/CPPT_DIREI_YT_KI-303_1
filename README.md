@@ -12,5 +12,9 @@
 mvnw.cmd verify
 mvnw.cmd package
 java -jar target/labs-1.0.0.jar
+java -jar target/labs-1.0.0.jar --version
+java -jar target/labs-1.0.0.jar --help
+java -jar target/labs-1.0.0.jar --input data/input.csv --output out/report.txt
 ```
+Для коротких опцій використовуйте `-h`, `-i` та `-o`. Шляхи також можна задавати у форматі `--input=PATH` і `--output=PATH`.
 На macOS та Ubuntu замість `mvnw.cmd` використовуйте `./mvnw`.
