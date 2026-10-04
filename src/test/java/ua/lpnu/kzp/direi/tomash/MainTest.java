@@ -13,10 +13,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Verifies command-line handling, input validation, and report generation. */
 class MainTest {
+    /** Temporary directory used for isolated input and output files. */
     @TempDir
     Path tempDir;
 
+    /** Verifies that the version option prints metadata without reading a CSV. */
     @Test
     void versionOptionPrintsProjectVersionWithoutReadingInput() {
         CommandResult result = runMain("--version");
@@ -25,6 +28,7 @@ class MainTest {
         assertEquals("", result.stderr());
     }
 
+    /** Verifies that long and short help options print the same usage text. */
     @Test
     void helpOptionsPrintUsageWithoutReadingInput() {
         CommandResult longOption = runMain("--help");
@@ -38,6 +42,7 @@ class MainTest {
         assertEquals("", longOption.stderr());
     }
 
+    /** Verifies custom input and nested output paths are honored. */
     @Test
     void inputAndOutputOptionsUseRequestedFiles() throws IOException {
         Path input = tempDir.resolve("trips.csv");
@@ -51,6 +56,7 @@ class MainTest {
         assertEquals("", result.stderr());
     }
 
+    /** Verifies short options and equals-sign path forms are accepted. */
     @Test
     void shortAndEqualsFormsAreAccepted() throws IOException {
         Path input = tempDir.resolve("trips.csv");
@@ -70,6 +76,7 @@ class MainTest {
         assertEquals("", equalsResult.stderr());
     }
 
+    /** Verifies invalid or incomplete options produce useful error messages. */
     @Test
     void invalidOptionsPrintClearErrorsAndUsage() {
         CommandResult missingInputPath = runMain("--input");
@@ -82,6 +89,12 @@ class MainTest {
         assertTrue(unknownOption.stderr().contains("Використання:"));
     }
 
+    /**
+     * Runs the application while capturing its standard output and error streams.
+     *
+     * @param args command-line arguments passed to the application
+     * @return captured output and error text
+     */
     private static CommandResult runMain(String... args) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ByteArrayOutputStream error = new ByteArrayOutputStream();
@@ -101,9 +114,16 @@ class MainTest {
         return new CommandResult(output.toString(StandardCharsets.UTF_8), error.toString(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Captured standard output and error text from an application invocation.
+     *
+     * @param stdout text written to standard output
+     * @param stderr text written to standard error
+     */
     private record CommandResult(String stdout, String stderr) {
     }
 
+    /** Verifies statistics use valid rows and ignore surrounding field whitespace. */
     @Test
     void buildsStatisticsFromValidRowsAndTrimsFields() {
         String report = Main.buildReport(List.of(
@@ -117,6 +137,7 @@ class MainTest {
         assertTrue(report.contains("Кількість помилок: 0"));
     }
 
+    /** Verifies rows with too few or too many fields are rejected precisely. */
     @Test
     void reportsExactErrorForTooFewOrTooManyFields() {
         assertErrors(List.of(
@@ -126,18 +147,21 @@ class MainTest {
                 "Рядок 2: очікується 5 полів, знайдено 6");
     }
 
+    /** Verifies a blank vehicle name is rejected. */
     @Test
     void reportsExactErrorForBlankVehicle() {
         assertErrors(List.of(" ;Driver;1;1;2026-09-28"),
                 "Рядок 1: порожня назва транспортного засобу або водія");
     }
 
+    /** Verifies a blank driver name is rejected. */
     @Test
     void reportsExactErrorForBlankDriver() {
         assertErrors(List.of("Car; ;1;1;2026-09-28"),
                 "Рядок 1: порожня назва транспортного засобу або водія");
     }
 
+    /** Verifies malformed distance and fuel values are rejected. */
     @Test
     void reportsExactErrorForNonNumericKilometersAndFuel() {
         assertErrors(List.of(
@@ -147,6 +171,7 @@ class MainTest {
                 "Рядок 2: числове поле має помилковий формат");
     }
 
+    /** Verifies negative distance and fuel values are rejected. */
     @Test
     void reportsExactErrorForNegativeKilometersAndFuel() {
         assertErrors(List.of(
@@ -156,6 +181,7 @@ class MainTest {
                 "Рядок 2: кілометраж і паливо мають бути скінченними невід'ємними числами");
     }
 
+    /** Verifies NaN and infinite distance or fuel values are rejected. */
     @Test
     void reportsExactErrorForNonFiniteKilometersAndFuel() {
         assertErrors(List.of(
@@ -169,6 +195,7 @@ class MainTest {
                 "Рядок 4: кілометраж і паливо мають бути скінченними невід'ємними числами");
     }
 
+    /** Verifies malformed and impossible ISO dates are rejected. */
     @Test
     void reportsExactErrorForMalformedAndImpossibleDates() {
         assertErrors(List.of(
@@ -178,6 +205,7 @@ class MainTest {
                 "Рядок 2: дата має бути у форматі YYYY-MM-DD і бути коректною");
     }
 
+    /** Verifies blank rows are skipped without changing reported source line numbers. */
     @Test
     void skipsBlankLinesAndKeepsOriginalLineNumbersInErrors() {
         String report = Main.buildReport(List.of(
@@ -190,6 +218,12 @@ class MainTest {
         assertTrue(report.contains("Рядок 3: очікується 5 полів, знайдено 1"));
     }
 
+    /**
+     * Asserts that the report contains exactly the expected validation errors.
+     *
+     * @param rows input rows passed to the report builder
+     * @param expectedErrors expected error messages, in any order
+     */
     private static void assertErrors(List<String> rows, String... expectedErrors) {
         String report = Main.buildReport(rows);
 

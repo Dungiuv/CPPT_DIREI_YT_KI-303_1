@@ -10,16 +10,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Reads and validates fleet trip records and produces a summary report.
+ *
+ * <p>Each non-blank UTF-8 input line must contain five semicolon-separated
+ * fields in this order: vehicle, driver, distance in kilometres, fuel in
+ * litres, and an ISO-8601 date ({@code YYYY-MM-DD}). Invalid records are
+ * excluded from the calculated statistics and reported with their line
+ * numbers.</p>
+ *
+ * <p>The report is printed to the console and written to a file. The default
+ * paths are {@code data/input.csv} and {@code out/report.txt}; both can be
+ * overridden through command-line options.</p>
+ */
 public final class Main {
+    /** Default path of the input CSV file. */
     private static final Path DEFAULT_INPUT = Path.of("data", "input.csv");
+
+    /** Default path of the generated report. */
     private static final Path DEFAULT_OUTPUT = Path.of("out", "report.txt");
 
-    /* Забороняє створення екземплярів службового класу. */
+    /** Prevents instantiation of this command-line utility class. */
     private Main() {
     }
 
     /**
-     * Головна точка входу до програми.
+     * Runs the command-line application.
+     *
+     * <p>Help and version options are handled without reading the input file.
+     * Otherwise, the selected CSV file is read as UTF-8, summarized, printed
+     * to standard output, and saved to the selected output path. File and
+     * argument errors are reported to standard error.</p>
      *
      * @param args аргументи командного рядка
      */
@@ -63,6 +84,11 @@ public final class Main {
         }
     }
 
+    /**
+     * Builds the usage text for the supported command-line options.
+     *
+     * @return usage instructions, terminated by the platform line separator
+     */
     private static String helpText() {
         return String.join(System.lineSeparator(),
             "Використання: java -jar target/labs-1.0.0.jar [OPTIONS]",
@@ -75,7 +101,23 @@ public final class Main {
             "");
     }
 
+    /**
+     * Holds the input, output, and action options selected for one invocation.
+     *
+     * @param input path to the CSV input
+     * @param output path to the generated report
+     * @param help whether usage instructions should be printed
+     * @param version whether the project version should be printed
+     */
     private record Options(Path input, Path output, boolean help, boolean version) {
+        /**
+         * Parses command-line arguments and fills unspecified paths with defaults.
+         *
+         * @param args command-line arguments
+         * @return parsed options
+         * @throws IllegalArgumentException if an option is unknown or requires
+         *         a missing or blank path
+         */
         private static Options parse(String[] args) {
             Path input = DEFAULT_INPUT;
             Path output = DEFAULT_OUTPUT;
@@ -104,6 +146,15 @@ public final class Main {
             return new Options(input, output, help, version);
         }
 
+        /**
+         * Reads the path value following a separate-form option.
+         *
+         * @param args all command-line arguments
+         * @param valueIndex index of the expected path value
+         * @param option option name used in any error message
+         * @return parsed path
+         * @throws IllegalArgumentException if the path argument is missing or blank
+         */
         private static Path optionPath(String[] args, int valueIndex, String option) {
             if (valueIndex >= args.length) {
                 throw new IllegalArgumentException("опція " + option + " потребує шлях");
@@ -111,6 +162,14 @@ public final class Main {
             return pathValue(args[valueIndex], option);
         }
 
+        /**
+         * Converts and validates a path value supplied for a command-line option.
+         *
+         * @param value path text
+         * @param option option name used in any error message
+         * @return the path represented by {@code value}
+         * @throws IllegalArgumentException if the value is blank
+         */
         private static Path pathValue(String value, String option) {
             if (value.isBlank()) {
                 throw new IllegalArgumentException("опція " + option + " потребує шлях");
@@ -119,6 +178,21 @@ public final class Main {
         }
     }
 
+    /**
+     * Validates input rows and formats statistics for the valid trip records.
+     *
+     * <p>Blank lines are ignored. A non-blank row must have five fields, a
+     * non-blank vehicle and driver, a valid ISO date, and finite non-negative
+     * distance and fuel values. Invalid rows are omitted from the statistics
+     * and included in the report's error list.</p>
+     *
+     * <p>The average fuel consumption is total fuel divided by total distance,
+     * multiplied by 100. It is reported as zero when the total distance is
+     * zero. If there are no valid records, the maximum trip distance is zero.</p>
+     *
+     * @param lines input file lines in their original order
+     * @return formatted report with statistics and validation errors
+     */
     static String buildReport(List<String> lines) {
         List<String> errors = new ArrayList<>();
         int validCount = 0;
