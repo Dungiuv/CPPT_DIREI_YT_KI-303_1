@@ -47,7 +47,10 @@ jobs:
         shell: pwsh
         run: |
           $expected = $env:GITHUB_REF_NAME.Substring(1)
-          $actual = (& .\mvnw.cmd -q help:evaluate -Dexpression=project.version -DforceStdout).Trim()
+          [xml]$pom = Get-Content pom.xml -Raw
+          $versionNode = $pom.SelectSingleNode("/*[local-name()='project']/*[local-name()='version']")
+          if ($null -eq $versionNode) { throw "Could not find project version in pom.xml" }
+          $actual = $versionNode.InnerText.Trim()
           if ($expected -ne $actual) { throw "Tag $expected does not match POM version $actual" }
 
       - name: Test on Unix
