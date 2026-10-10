@@ -24,7 +24,7 @@ class MainTest {
     void versionOptionPrintsProjectVersionWithoutReadingInput() {
         CommandResult result = runMain("--version");
 
-        assertEquals("1.0.0" + System.lineSeparator(), result.stdout());
+        assertEquals("1.0.0%n".formatted(), result.stdout());
         assertEquals("", result.stderr());
     }
 
@@ -47,7 +47,7 @@ class MainTest {
     void inputAndOutputOptionsUseRequestedFiles() throws IOException {
         Path input = tempDir.resolve("trips.csv");
         Path output = tempDir.resolve("reports/daily/report.txt");
-        Files.writeString(input, "Car;Driver;100;8;2026-09-28\n", StandardCharsets.UTF_8);
+        Files.writeString(input, "Car;Driver;100;8;2026-09-28%n".formatted(), StandardCharsets.UTF_8);
 
         CommandResult result = runMain("--input", input.toString(), "--output", output.toString());
 
@@ -62,12 +62,12 @@ class MainTest {
         Path input = tempDir.resolve("trips.csv");
         Path shortOutput = tempDir.resolve("short.txt");
         Path equalsOutput = tempDir.resolve("equals.txt");
-        Files.writeString(input, "Car;Driver;50;5;2026-09-28\n", StandardCharsets.UTF_8);
+        Files.writeString(input, "Car;Driver;50;5;2026-09-28%n".formatted(), StandardCharsets.UTF_8);
 
         CommandResult shortResult = runMain("-i", input.toString(), "-o", shortOutput.toString());
         CommandResult equalsResult = runMain(
-                "--input=" + input,
-                "--output=" + equalsOutput);
+                "--input=%s".formatted(input),
+                "--output=%s".formatted(equalsOutput));
 
         assertEquals(shortResult.stdout(), Files.readString(shortOutput, StandardCharsets.UTF_8));
         assertEquals(equalsResult.stdout(), Files.readString(equalsOutput, StandardCharsets.UTF_8));
@@ -228,11 +228,11 @@ class MainTest {
         String report = Main.buildReport(rows);
 
         assertTrue(report.contains("Коректних записів: 0"));
-        assertTrue(report.contains("Кількість помилок: " + expectedErrors.length));
+        assertTrue(report.contains("Кількість помилок: %d".formatted(expectedErrors.length)));
         List<String> reportLines = report.lines().toList();
         for (String expectedError : expectedErrors) {
             assertEquals(1, reportLines.stream().filter(expectedError::equals).count(),
-                    "Очікувалося точне повідомлення: " + expectedError);
+                    "Очікувалося точне повідомлення: %s".formatted(expectedError));
         }
     }
 }

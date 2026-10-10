@@ -79,7 +79,7 @@ public final class Main {
                         options.output(), exception.getMessage());
             }
         } catch (IllegalArgumentException exception) {
-            System.err.println("Помилка аргументів: " + exception.getMessage());
+            System.err.println("Помилка аргументів: %s".formatted(exception.getMessage()));
             System.err.print(helpText());
         }
     }
@@ -137,7 +137,7 @@ public final class Main {
                         } else if (argument.startsWith("--output=")) {
                             output = pathValue(argument.substring("--output=".length()), "--output");
                         } else {
-                            throw new IllegalArgumentException("невідома опція: " + argument);
+                            throw new IllegalArgumentException("невідома опція: %s".formatted(argument));
                         }
                     }
                 }
@@ -157,7 +157,7 @@ public final class Main {
          */
         private static Path optionPath(String[] args, int valueIndex, String option) {
             if (valueIndex >= args.length) {
-                throw new IllegalArgumentException("опція " + option + " потребує шлях");
+                throw new IllegalArgumentException("опція %s потребує шлях".formatted(option));
             }
             return pathValue(args[valueIndex], option);
         }
@@ -172,7 +172,7 @@ public final class Main {
          */
         private static Path pathValue(String value, String option) {
             if (value.isBlank()) {
-                throw new IllegalArgumentException("опція " + option + " потребує шлях");
+                throw new IllegalArgumentException("опція %s потребує шлях".formatted(option));
             }
             return Path.of(value);
         }
@@ -264,14 +264,15 @@ public final class Main {
         StringBuilder reportBuilder = new StringBuilder();
         reportBuilder.append(String.format(Locale.ROOT, "Коректних записів: %d%n", validCount));
         reportBuilder.append(String.format(Locale.ROOT, "Сумарний кілометраж: %.2f км%n", totalKm));
-        reportBuilder.append(String.format(Locale.ROOT, "Середня витрата на 100 км: %.2f л/100км%n", avgFuelPer100Km));
+        reportBuilder.append(String.format(Locale.ROOT, "Середня витрата на 100 км: %.2f л/100км%n",
+                avgFuelPer100Km));
         reportBuilder.append(String.format(Locale.ROOT, "Найбільша поїздка: %.2f км%n", maxKm));
         reportBuilder.append(String.format(Locale.ROOT, "Кількість помилок: %d%n", errors.size()));
         
         if (!errors.isEmpty()) {
-            reportBuilder.append("Список помилок:\n");
+            reportBuilder.append("Список помилок:%n".formatted());
             for (String err : errors) {
-                reportBuilder.append(err).append("\n");
+                reportBuilder.append("%s%n".formatted(err));
             }
         }
 

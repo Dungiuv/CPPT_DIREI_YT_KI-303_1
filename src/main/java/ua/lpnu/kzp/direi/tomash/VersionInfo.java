@@ -41,7 +41,7 @@ public final class VersionInfo {
     private static String required(String key) {
         String value = PROPERTIES.getProperty(key);
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Missing version property: " + key);
+            throw new IllegalStateException("Missing version property: %s".formatted(key));
         }
         return value;
     }
@@ -56,12 +56,12 @@ public final class VersionInfo {
         Properties properties = new Properties();
         try (InputStream input = VersionInfo.class.getResourceAsStream(RESOURCE)) {
             if (input == null) {
-                throw new IllegalStateException("Missing resource: " + RESOURCE);
+                throw new IllegalStateException("Missing resource: %s".formatted(RESOURCE));
             }
             properties.load(input);
             return properties;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not read " + RESOURCE, exception);
+            throw new IllegalStateException("Could not read %s".formatted(RESOURCE), exception);
         }
     }
 }
