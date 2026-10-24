@@ -24,7 +24,7 @@ class MainTest {
     void versionOptionPrintsProjectVersionWithoutReadingInput() {
         CommandResult result = runMain("--version");
 
-        assertEquals("1.0.0%n".formatted(), result.stdout());
+        assertEquals("%s%n".formatted(VersionInfo.projectVersion()), result.stdout());
         assertEquals("", result.stderr());
     }
 
@@ -35,6 +35,8 @@ class MainTest {
         CommandResult shortOption = runMain("-h");
 
         assertTrue(longOption.stdout().contains("Використання:"));
+        assertTrue(longOption.stdout().contains(
+                "target/labs-%s.jar".formatted(VersionInfo.projectVersion())));
         assertTrue(longOption.stdout().contains("--version"));
         assertTrue(longOption.stdout().contains("--input PATH"));
         assertTrue(longOption.stdout().contains("--output PATH"));
@@ -126,7 +128,7 @@ class MainTest {
     /** Verifies statistics use valid rows and ignore surrounding field whitespace. */
     @Test
     void buildsStatisticsFromValidRowsAndTrimsFields() {
-        String report = Main.buildReport(List.of(
+        String report = TripController.buildReport(List.of(
                 " Toyota ; Driver A ; 100 ; 8 ; 2026-09-28 ",
                 "Van;Driver B;50;7;2026-09-27"));
 
@@ -208,7 +210,7 @@ class MainTest {
     /** Verifies blank rows are skipped without changing reported source line numbers. */
     @Test
     void skipsBlankLinesAndKeepsOriginalLineNumbersInErrors() {
-        String report = Main.buildReport(List.of(
+        String report = TripController.buildReport(List.of(
                 "",
                 "Car;Driver;10;2;2026-09-28",
                 "not-a-record"));
@@ -218,6 +220,24 @@ class MainTest {
         assertTrue(report.contains("Рядок 3: очікується 5 полів, знайдено 1"));
     }
 
+    /** Verifies invalid rows are excluded from the list used for statistics. */
+    @Test
+    void invalidRowsDoNotAffectStatisticsForValidTrips() {
+        String report = TripController.buildReport(List.of(
+                "Car;Driver A;100;8;2026-09-28",
+                "Car;Driver B;-500;900;2026-09-27",
+                "Van;Driver C;50;7;2026-09-26",
+                "Truck;Driver D;many;30;2026-09-25"));
+
+        assertTrue(report.contains("Коректних записів: 2"));
+        assertTrue(report.contains("Сумарний кілометраж: 150.00 км"));
+        assertTrue(report.contains("Середня витрата на 100 км: 10.00 л/100км"));
+        assertTrue(report.contains("Найбільша поїздка: 100.00 км"));
+        assertTrue(report.contains("Кількість помилок: 2"));
+        assertTrue(report.contains("Рядок 2: кілометраж і паливо мають бути скінченними невід'ємними числами"));
+        assertTrue(report.contains("Рядок 4: числове поле має помилковий формат"));
+    }
+
     /**
      * Asserts that the report contains exactly the expected validation errors.
      *
@@ -225,7 +245,7 @@ class MainTest {
      * @param expectedErrors expected error messages, in any order
      */
     private static void assertErrors(List<String> rows, String... expectedErrors) {
-        String report = Main.buildReport(rows);
+        String report = TripController.buildReport(rows);
 
         assertTrue(report.contains("Коректних записів: 0"));
         assertTrue(report.contains("Кількість помилок: %d".formatted(expectedErrors.length)));

@@ -9,6 +9,6 @@ class VersionInfoTest {
     /** Confirms the version resource contains the version declared by the project. */
     @Test
     void readsMavenProjectVersionFromFilteredResource() {
-        assertEquals("1.0.0", VersionInfo.projectVersion());
+        assertEquals("2.0.0", VersionInfo.projectVersion());
     }
 }
