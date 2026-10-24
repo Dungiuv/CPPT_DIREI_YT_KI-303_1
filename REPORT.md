@@ -83,13 +83,11 @@
 лабораторної № 1 увійшли до
 [PR #4](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/4).
 
-Для лабораторної № 2 необхідно додати фактичні посилання після створення
-Issue і PR:
-
-- **Issue лабораторної № 2:** буде додано після створення.
-- **Pull Request:** буде додано після відкриття; PR має містити `Closes #N`.
-- **CI на PR:** буде додано після успішного виконання workflow на трьох ОС.
-- **Злиття та закриття Issue:** буде підтверджено після злиття PR.
+Роботу лабораторної № 2 відстежує
+[Issue #5](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/issues/5).
+Зміни подано в [PR #6](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/6),
+який містить `Closes #5`. На момент підготовки цього звіту всі перевірки PR
+успішні, але PR ще не злито; після злиття Issue закриється автоматично.
 
 ## 7. Приклад і порівняння поведінки
 
@@ -119,9 +117,16 @@ java -jar target/labs-2.0.0.jar --input data/input.csv --output out/report.txt
 створив виконуваний JAR. Звіт JAR порівняно з контрольним результатом
 лабораторної № 1 — відмінностей немає.
 
-Перевірку GitHub Actions, завантаження артефактів та результат CI на основній
-гілці буде зафіксовано після створення PR і його злиття. До появи запуску
-workflow відповідні URL навмисно не вказані.
+Локальні перевірки підтверджені також GitHub Actions:
+[запуск CI № 17 для PR #6](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/40111276047)
+завершився успішно. Усі три перевірки `verify` пройшли на Ubuntu, Windows і
+macOS. Запуск створив три JAR-артефакти:
+[Ubuntu](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/40111276047/artifacts/12566662778),
+[Windows](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/40111276047/artifacts/12566114808)
+та
+[macOS](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/40111276047/artifacts/12566069866).
+Артефакти доступні до 22 січня 2027 року. Після злиття PR потрібно перевірити
+окремий запуск CI на основній гілці й додати його результат.
 
 ## 9. Документація
 
