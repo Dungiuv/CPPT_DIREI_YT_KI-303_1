@@ -238,6 +238,26 @@ class MainTest {
         assertTrue(report.contains("Рядок 4: числове поле має помилковий формат"));
     }
 
+    /** Verifies the lab 3 model preserves the complete report for the control CSV. */
+    @Test
+    void controlCsvProducesThePreviousLabReport() throws IOException {
+        List<String> rows = Files.readAllLines(Path.of("data", "input.csv"), StandardCharsets.UTF_8);
+        String report = TripController.buildReport(rows);
+        String expected = """
+                Коректних записів: 5
+                Сумарний кілометраж: 3693.00 км
+                Середня витрата на 100 км: 5.66 л/100км
+                Найбільша поїздка: 1488.00 км
+                Кількість помилок: 3
+                Список помилок:
+                Рядок 4: кілометраж і паливо мають бути скінченними невід'ємними числами
+                Рядок 7: порожня назва транспортного засобу або водія
+                Рядок 9: очікується 5 полів, знайдено 6
+                """.replace("\n", System.lineSeparator());
+
+        assertEquals(expected, report);
+    }
+
     /**
      * Asserts that the report contains exactly the expected validation errors.
      *
