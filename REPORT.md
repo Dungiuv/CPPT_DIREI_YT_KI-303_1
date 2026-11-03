@@ -151,23 +151,35 @@ java -jar target/labs-3.0.0.jar --input data/input.csv --output out/report.txt
 `.\mvnw.cmd package`, `.\mvnw.cmd javadoc:javadoc` та
 `java -jar target\labs-3.0.0.jar --input data\input.csv --output out\report.txt`.
 
-GitHub Actions уже налаштований на Ubuntu, Windows і macOS: запускає
-`test`, `verify`, `package` і завантажує JAR як артефакт. CI для гілки ЛР-3
-ще потрібно перевірити після push/створення PR; до цього часу результат
-CI не позначається як успішний.
+GitHub Actions налаштований на Ubuntu, Windows і macOS: виконує `test`,
+`verify`, `package` і завантажує JAR як артефакт. Для PR #8 запуск
+[GitHub Actions № 41656580366](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/41656580366)
+завершився успішно на всіх трьох ОС. Доступні артефакти JAR:
+[Ubuntu](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/41656580366/artifacts/13240836280),
+[Windows](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/41656580366/artifacts/13240521677)
+та
+[macOS](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/41656580366/artifacts/13240988315).
+Артефакти вказані GitHub як такі, що спливають 1 лютого 2027 року.
 
 Фінальні локальні результати: `./mvnw clean test` — успішно (34 тести);
 `./mvnw verify` — успішно (SpotBugs без попереджень); `./mvnw package` —
 успішно, створено `target/labs-3.0.0.jar`; `./mvnw clean javadoc:javadoc` —
-успішно, Javadoc згенеровано без попереджень. Працездатність зібраного JAR перевірено локальним запуском, файл звіту генерується коректно.
+успішно, Javadoc згенеровано без попереджень. Працездатність зібраного JAR
+перевірено локальним запуском, файл звіту генерується коректно.
 
 ## 11. GitHub Issues і Pull Request
 
-GitHub Actions має пройти для PR на всіх трьох ОС. Історичні Issue та PR попередніх лабораторних:
+Роботу лабораторної № 3 відстежує
+[Issue #7](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/issues/7).
+Зміни подано в [PR #8](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/8)
+із `Closes #7`. PR відкритий, запуск CI № 41656580366 успішний на Ubuntu,
+Windows і macOS; артефакти наведено в розділі 10. Після злиття Issue
+закриється автоматично, а CI основної гілки потрібно перевірити окремо.
+Історичні Issue та PR попередніх лабораторних:
 
 | № GitHub Issue | Зміна | Перевірка |
 |---|---|---|
-| ЛР-3: буде додано | Ієрархія `Trip`, підтипи, enum, рівність, тести й документація | Після створення PR: `test`, `verify`, `package` у CI на Ubuntu, Windows і macOS |
+| [Issue #7](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/issues/7) | Ієрархія `Trip`, підтипи, enum, рівність, тести й документація | [PR #8](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/8); [успішний CI на трьох ОС](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/actions/runs/41656580366) |
 | [Issue #5](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/issues/5) | Лабораторна робота № 2 | [PR #6](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/6) |
 | [Issue #3](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/issues/3) | Реалізація попередньої лабораторної роботи | [PR #4](https://github.com/Dungiuv/CPPT_DIREI_YT_KI-303_1/pull/4) |
 
