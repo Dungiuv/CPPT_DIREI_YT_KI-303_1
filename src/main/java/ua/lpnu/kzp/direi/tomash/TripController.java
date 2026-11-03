@@ -12,6 +12,10 @@ import java.util.Locale;
  * Coordinates trip input, domain processing, report generation, and output.
  */
 final class TripController {
+    /** Creates the stateless trip-processing controller. */
+    TripController() {
+    }
+
     /**
      * Runs the selected application mode.
      *

@@ -2,16 +2,22 @@ package ua.lpnu.kzp.direi.tomash;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Описує незмінний запис про поїздку автопарку.
+ * Спільний незмінний тип поїздок автопарку.
  *
- * <p>Коректна поїздка має назву транспортного засобу й водія, дату,
- * а також скінченні невід'ємні значення кілометражу та витрати пального.</p>
+ * <p>Усі поїздки мають транспортний засіб, водія, кілометраж, фактичну
+ * витрату пального та дату. Базовий клас перевіряє спільні інваріанти,
+ * а підтип визначає нормативну кількість пального для кілометражу поїздки.</p>
  */
-public final class Trip {
+public abstract class Trip {
+    /** Маркери транспортних засобів, що визначають вантажну поїздку. */
+    private static final List<String> CARGO_MARKERS =
+            List.of("truck", "man", "volvo", "daf", "scania", "вантаж");
+
     /** Назва транспортного засобу. */
     private final String vehicle;
 
@@ -21,25 +27,42 @@ public final class Trip {
     /** Кілометраж поїздки. */
     private final double km;
 
-    /** Кількість витраченого пального в літрах. */
+    /** Кількість фактично витраченого пального в літрах. */
     private final double fuelLiters;
 
     /** Дата поїздки. */
     private final LocalDate date;
 
     /**
-     * Створює запис про поїздку після перевірки всіх його полів.
+     * Ініціалізує спільний стан із попередньо перевірених значень.
+     *
+     * @param state перевірені значення полів поїздки
+     */
+    Trip(ValidatedState state) {
+        this.vehicle = state.vehicle;
+        this.driver = state.driver;
+        this.km = state.km;
+        this.fuelLiters = state.fuelLiters;
+        this.date = state.date;
+    }
+
+    /**
+     * Перевіряє та готує спільний стан до виклику конструктора базового класу.
+     * Підтипи викликають цей метод в аргументі {@code super(...)} до ініціалізації
+     * власного стану.
      *
      * @param vehicle назва транспортного засобу
      * @param driver ім'я водія
      * @param km кілометраж поїздки
-     * @param fuelLiters кількість витраченого пального в літрах
+     * @param fuelLiters фактично витрачене пальне в літрах
      * @param date дата поїздки
-     * @throws NullPointerException якщо назва, ім'я водія або дата дорівнюють {@code null}
-     * @throws IllegalArgumentException якщо текстове поле порожнє, або числове
-     *         значення від'ємне чи нескінченне
+     * @return перевірений стан для створення підтипу
+     * @throws NullPointerException якщо текстове поле або дата дорівнює {@code null}
+     * @throws IllegalArgumentException якщо текстове поле порожнє або показник
+     *         є від'ємним чи нескінченним
      */
-    public Trip(String vehicle, String driver, double km, double fuelLiters, LocalDate date) {
+    static ValidatedState validatedState(
+            String vehicle, String driver, double km, double fuelLiters, LocalDate date) {
         Objects.requireNonNull(vehicle, "Назва транспортного засобу не може бути null");
         Objects.requireNonNull(driver, "Ім'я водія не може бути null");
         Objects.requireNonNull(date, "Дата поїздки не може бути null");
@@ -52,19 +75,55 @@ public final class Trip {
                     "кілометраж і паливо мають бути скінченними невід'ємними числами");
         }
 
-        this.vehicle = vehicle;
-        this.driver = driver;
-        this.km = km;
-        this.fuelLiters = fuelLiters;
-        this.date = date;
+        return new ValidatedState(vehicle, driver, km, fuelLiters, date);
+    }
+
+    /** Перевірений спільний стан, доступний лише всередині пакета моделі. */
+    static final class ValidatedState {
+        /** Назва транспортного засобу. */
+        private final String vehicle;
+
+        /** Ім'я водія. */
+        private final String driver;
+
+        /** Кілометраж поїздки. */
+        private final double km;
+
+        /** Фактично витрачене пальне в літрах. */
+        private final double fuelLiters;
+
+        /** Дата поїздки. */
+        private final LocalDate date;
+
+        /**
+         * Зберігає вже перевірені спільні значення поїздки.
+         *
+         * @param vehicle назва транспортного засобу
+         * @param driver ім'я водія
+         * @param km кілометраж
+         * @param fuelLiters фактично витрачене пальне
+         * @param date дата поїздки
+         */
+        private ValidatedState(String vehicle, String driver, double km, double fuelLiters, LocalDate date) {
+            this.vehicle = vehicle;
+            this.driver = driver;
+            this.km = km;
+            this.fuelLiters = fuelLiters;
+            this.date = date;
+        }
     }
 
     /**
-     * Створює поїздку з CSV-рядка формату
+     * Створює підтип поїздки з CSV-рядка формату
      * {@code vehicle;driver;km;fuelLiters;date}.
      *
+     * <p>Транспортні засоби, назва яких містить {@code Truck}, {@code MAN},
+     * {@code Volvo}, {@code DAF}, {@code Scania} або {@code Вантаж}
+     * (без урахування регістру), створюються як вантажні. Інші записи
+     * створюються як пасажирські.</p>
+     *
      * @param line рядок із даними поїздки
-     * @return створена поїздка
+     * @return створена пасажирська або вантажна поїздка
      * @throws NullPointerException якщо рядок дорівнює {@code null}
      * @throws IllegalArgumentException якщо кількість або значення полів некоректні
      */
@@ -100,7 +159,10 @@ public final class Trip {
             throw new IllegalArgumentException("числове поле має помилковий формат", exception);
         }
 
-        return new Trip(fields[0], fields[1], km, fuelLiters, date);
+        if (isCargoVehicle(fields[0])) {
+            return new CargoTrip(fields[0], fields[1], km, fuelLiters, date);
+        }
+        return new PassengerTrip(fields[0], fields[1], km, fuelLiters, date);
     }
 
     /**
@@ -108,7 +170,7 @@ public final class Trip {
      *
      * @return назва транспортного засобу
      */
-    public String getVehicle() {
+    public final String getVehicle() {
         return vehicle;
     }
 
@@ -117,7 +179,7 @@ public final class Trip {
      *
      * @return ім'я водія
      */
-    public String getDriver() {
+    public final String getDriver() {
         return driver;
     }
 
@@ -126,16 +188,16 @@ public final class Trip {
      *
      * @return кілометраж у кілометрах
      */
-    public double getKm() {
+    public final double getKm() {
         return km;
     }
 
     /**
-     * Повертає кількість витраченого пального.
+     * Повертає фактичну кількість витраченого пального.
      *
-     * @return витрачене пальне в літрах
+     * @return фактична витрата пального в літрах
      */
-    public double getFuelLiters() {
+    public final double getFuelLiters() {
         return fuelLiters;
     }
 
@@ -144,18 +206,76 @@ public final class Trip {
      *
      * @return дата поїздки
      */
-    public LocalDate getDate() {
+    public final LocalDate getDate() {
         return date;
+    }
+
+    /**
+     * Повертає категорію поїздки.
+     *
+     * @return категорія, визначена фактичним підтипом
+     */
+    public abstract TripKind getKind();
+
+    /**
+     * Обчислює нормативну кількість пального для кілометражу поїздки.
+     *
+     * @return нормативна кількість пального в літрах
+     */
+    public abstract double calculateNormativeFuelLiters();
+
+    /**
+     * Порівнює поїздки за конкретним підтипом і всіма спільними полями.
+     *
+     * @param other об'єкт для порівняння
+     * @return {@code true}, якщо тип і всі поля поїздок збігаються
+     */
+    @Override
+    public final boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        Trip trip = (Trip) other;
+        return Double.compare(km, trip.km) == 0
+                && Double.compare(fuelLiters, trip.fuelLiters) == 0
+                && vehicle.equals(trip.vehicle)
+                && driver.equals(trip.driver)
+                && date.equals(trip.date);
+    }
+
+    /**
+     * Повертає хеш-код, узгоджений із рівністю за типом і всіма полями.
+     *
+     * @return хеш-код поїздки
+     */
+    @Override
+    public final int hashCode() {
+        return Objects.hash(getClass(), vehicle, driver, km, fuelLiters, date);
     }
 
     /**
      * Повертає форматоване текстове подання поїздки.
      *
-     * @return транспортний засіб, водій, показники та дата поїздки
+     * @return транспортний засіб, водій, фактичні показники та дата
      */
     @Override
-    public String toString() {
+    public final String toString() {
         return String.format(Locale.ROOT, "%s: водій %s, %.2f км, %.2f л, дата %s",
                 vehicle, driver, km, fuelLiters, date);
+    }
+
+    /**
+     * Перевіряє, чи містить назва транспортного засобу один із вантажних маркерів.
+     *
+     * @param vehicle назва транспортного засобу
+     * @return {@code true}, якщо назва відповідає правилу вантажної поїздки
+     */
+    private static boolean isCargoVehicle(String vehicle) {
+        String normalizedVehicle = vehicle.toLowerCase(Locale.ROOT);
+        return CARGO_MARKERS.stream().anyMatch(normalizedVehicle::contains);
     }
 }
